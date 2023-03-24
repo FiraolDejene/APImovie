@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>IMDb API Example with Bootstrap Cards</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+
+    </style>
+</head>
+
+<body>
+
+
+
+    <div class="container my-5">
+        <div class="mb-4">
+            <a href="index.html" class="a"> <button class=" btn-primary mt-3 ">back to home</button></a>
+        </div>
+        <div class="row">
+
+
+            <div class="col-md-6">
+                <div class="">
+                    <input type="text" id="search-input" class="form-control mb-2" placeholder="Search for a movie...">
+                </div>
+
+                <div class="">
+                    <button id="search-button" class="btn btn-primary btn-block mb-2">Search</button>
+                </div>
+
+
+            </div>
+
+
+            <div class="col-md-6" id="movie-container"></div>
+
+
+        </div>
+    </div>
+
+    <script>
+        const apiKey = 'k_glwc007d';
+        const searchButton = document.getElementById('search-button');
+        const searchInput = document.getElementById('search-input');
+        const movieContainer = document.getElementById('movie-container');
+
+        function searchMovie() {
+            const searchTitle = searchInput.value;
+
+            fetch(`https://imdb-api.com/en/API/SearchTitle/${apiKey}/${searchTitle}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.errorMessage) {
+                        console.error(data.errorMessage);
+                        movieContainer.innerHTML = `
+              <div class="col-md-12">
+                <div class="card mb-4 shadow-sm">
+                  <div class="card-body">
+                    <p class="card-text">${data.errorMessage}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+                    } else if (data.results && data.results.length > 0) {
+                        const movieId = data.results[0].id;
+                        fetch(`https://imdb-api.com/en/API/Title/${apiKey}/${movieId}`)
+                            .then(response => response.json())
+                            .then(movieData => {
+                                const movieTitle = movieData.title;
+                                const Cast = movieData.Cast;
+                                const releaseYear = movieData.releaseYear;
+                                const movieDescription = movieData.plot;
+                                const moviePoster = movieData.image;
+                                movieContainer.innerHTML = `
+                  <div class="col-md-0">
+                    <div class="card mb-4 shadow-sm">
+                      <img src="${moviePoster}" class="card-img-top" alt="${movieTitle}">
+                      <div class="card-body">
+                        <h5 class="card-title">${movieTitle}</h5>
+                        <h5 class="card-title">${releaseYear}</h5>
+                        <p class="card-text">${Cast}</p>
+                        <p class="card-text">${movieDescription}</p>
+
+                      </div>
+                    </div>
+                  </div>
+                `;
+                            })
+                            .catch(error => console.error(error));
+                    } else {
+                        console.error(`No results found for "${searchTitle}"`);
+                        movieContainer.innerHTML = `
+              <div class="col-md-12">
+                <div class="card mb-4 shadow-sm">
+                  <div class="card-body">
+                    <p class="card-text">No results found for "${searchTitle}"</p>
+                  </div>
+                </div>
+              </div>
+            `;
+                    }
+                })
+                .catch(error => console.error(error));
+        }
+
+        searchButton.addEventListener('click', searchMovie);
+    </script>
+
+</body>
+
+</html>
